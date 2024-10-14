@@ -91,7 +91,7 @@ def main():
     st.write("Enter the vehicle details below to predict its price.")
 
     # Load data for visualization
-    url = "https://drive.google.com/file/d/1FjZWfVGrIIdtQVXu4g89lcVgQRBg8h1j/view?usp=sharing.csv"
+    url = "https://drive.google.com/uc?id=1FjZWfVGrIIdtQVXu4g89lcVgQRBg8h1j"
     df = pd.read_csv(url)  # تأكد من تحميل بياناتك
     df = pd.DataFrame()  # استبدل هذا بجلب البيانات الخاصة بك.
 
