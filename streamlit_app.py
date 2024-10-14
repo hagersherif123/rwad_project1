@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestRegressor
 def load_model_from_drive(file_id):
     output = 'vehicle_price_model.pkl'
     try:
-        url = f'https://drive.google.com/uc?id={file_id}'
+        url = f'https://drive.google.com/uc?id={1tm26hgFqH6jgquktn3ZosbTuRV_Yoepq}'
         gdown.download(url, output, quiet=False)
         with open(output, 'rb') as file:
             model = pickle.load(file)
