@@ -5,6 +5,9 @@ import requests
 from io import BytesIO
 from sklearn.ensemble import RandomForestRegressor
 
+# تأكد من أن st.set_page_config هو أول دالة يتم استدعاؤها
+st.set_page_config(page_title="Vehicle Price Prediction", page_icon="🚗", layout="wide")
+
 # Custom CSS for better styling
 st.markdown("""
 <style>
@@ -31,9 +34,19 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Function to download and load the model
-def download_model(url):
-    response = requests.get(url)
-    return BytesIO(response.content)
+def load_model_from_drive(file_id):
+    url = f'https://drive.google.com/uc?id={file_id}'
+    try:
+        response = requests.get(url)
+        model = pickle.load(BytesIO(response.content))
+        if isinstance(model, RandomForestRegressor):
+            return model
+        else:
+            st.error("Loaded model is not a RandomForestRegressor.")
+            return None
+    except Exception as e:
+        st.error(f"Error loading the model: {str(e)}")
+        return None
 
 # Preprocess the input data
 def preprocess_input(data, model):
@@ -45,8 +58,6 @@ def preprocess_input(data, model):
 
 # Main Streamlit app
 def main():
-    st.set_page_config(page_title="Vehicle Price Prediction", page_icon="🚗", layout="wide")
-    
     st.title("🚗 Vehicle Price Prediction App")
     st.write("Enter the vehicle details below to predict its price.")
 
@@ -69,12 +80,9 @@ def main():
 
     if st.button("Predict Price 💰"):
         with st.spinner("Calculating..."):
-            model_url = "https://drive.google.com/uc?id=11btPBNR74na_NjjnjrrYT8RSf8ffiumo"  # Google Drive file URL
-            try:
-                model_file = download_model(model_url)
-                model = pickle.load(model_file)
-                st.success("Model loaded successfully!")
-                
+            file_id = '11btPBNR74na_NjjnjrrYT8RSf8ffiumo'  # Google Drive file ID
+            model = load_model_from_drive(file_id)
+            if model is not None:
                 input_data = {
                     'Year': year,
                     'UsedOrNew': used_or_new,
@@ -104,13 +112,8 @@ def main():
                     
                 except Exception as e:
                     st.error(f"Error making prediction: {str(e)}")
-                    
-            except ModuleNotFoundError as e:
-                st.error(f"Error: {str(e)}")
-                st.write("It looks like you're missing some required libraries. Please install them using:")
-                st.code("pip install scikit-learn")
-            except Exception as e:
-                st.error(f"Error loading the model: {str(e)}")
+            else:
+                st.error("Failed to load the model.")
 
 if __name__ == "__main__":
     main()
