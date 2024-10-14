@@ -4,6 +4,7 @@ import pickle
 import requests
 from io import BytesIO
 from sklearn.ensemble import RandomForestRegressor
+import matplotlib.pyplot as plt
 
 # تأكد من أن st.set_page_config هو أول دالة يتم استدعاؤها
 st.set_page_config(page_title="Vehicle Price Prediction", page_icon="🚗", layout="wide")
@@ -109,7 +110,21 @@ def main():
                         'importance': model.feature_importances_
                     }).sort_values('importance', ascending=False).head(10)
                     st.bar_chart(feature_importance.set_index('feature'))
-                    
+
+                    # Plotting feature importance using matplotlib
+                    plt.figure(figsize=(10, 6))
+                    plt.barh(feature_importance['feature'], feature_importance['importance'], color='skyblue')
+                    plt.xlabel('Importance')
+                    plt.ylabel('Feature')
+                    plt.title('Top 10 Important Features')
+                    st.pyplot(plt)
+
+                    # Displaying input data and prediction as a table
+                    st.subheader("Input Data and Prediction")
+                    input_data['Predicted Price'] = f"${prediction[0]:,.2f}"
+                    input_df_display = pd.DataFrame(input_data, index=[0])
+                    st.dataframe(input_df_display)
+
                 except Exception as e:
                     st.error(f"Error making prediction: {str(e)}")
             else:
