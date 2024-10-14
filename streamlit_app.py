@@ -50,8 +50,19 @@ def preprocess_input(data, model):
     input_df = pd.DataFrame(data, index=[0])
     input_df_encoded = pd.get_dummies(input_df, drop_first=True)
     model_features = model.feature_names_in_
+    
+    # Debugging: Print the features in the model
+    st.write("Expected model features:")
+    st.write(model_features)
+
     input_df_encoded = input_df_encoded.reindex(columns=model_features, fill_value=0)
+
+    # Debugging: Print the processed input DataFrame
+    st.write("Processed Input DataFrame:")
+    st.dataframe(input_df_encoded)  # عرض البيانات المعالجة للتأكد من الأعمدة
+    
     return input_df_encoded
+
 
 # Create a function to generate plots
 def create_dashboard(df):
