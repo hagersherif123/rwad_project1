@@ -90,10 +90,14 @@ def main():
     st.title("🚗 Vehicle Price Prediction App")
     st.write("Enter the vehicle details below to predict its price.")
 
-    # Load data for visualization
-    url = "https://drive.google.com/uc?id=1FjZWfVGrIIdtQVXu4g89lcVgQRBg8h1j"
-    df = pd.read_csv(url)  # تأكد من تحميل بياناتك
-    df = pd.DataFrame()  # استبدل هذا بجلب البيانات الخاصة بك.
+    # تحميل البيانات من Google Drive
+    data_file_id = 'YOUR_DATA_FILE_ID'  # استبدل بمعرف ملف البيانات
+    url = f'https://drive.google.com/uc?id={data_file_id}'
+    df = pd.read_csv(url)  # تحميل البيانات من Google Drive
+
+    if df.empty:
+        st.error("Failed to load data.")
+        return
 
     col1, col2 = st.columns(2)
 
@@ -114,23 +118,23 @@ def main():
 
     # Load model only once and store in session state
     if 'model' not in st.session_state:
-        file_id = '11btPBNR74na_NjjnjrrYT8RSf8ffiumo'  # Google Drive file ID
-        st.session_state.model = load_model_from_drive(file_id)
+        model_file_id = '11btPBNR74na_NjjnjrrYT8RSf8ffiumo'  # Google Drive file ID
+        st.session_state.model = load_model_from_drive(model_file_id)
 
     # Make prediction automatically based on inputs
     if st.session_state.model is not None:
         input_data = {
-            'Year': st.session_state.year,
-            'UsedOrNew': st.session_state.used_or_new,
-            'Transmission': st.session_state.transmission,
-            'Engine': st.session_state.engine,
-            'DriveType': st.session_state.drive_type,
-            'FuelType': st.session_state.fuel_type,
-            'FuelConsumption': st.session_state.fuel_consumption,
-            'Kilometres': st.session_state.kilometres,
-            'CylindersinEngine': st.session_state.cylinders_in_engine,
-            'BodyType': st.session_state.body_type,
-            'Doors': st.session_state.doors
+            'Year': year,
+            'UsedOrNew': used_or_new,
+            'Transmission': transmission,
+            'Engine': engine,
+            'DriveType': drive_type,
+            'FuelType': fuel_type,
+            'FuelConsumption': fuel_consumption,
+            'Kilometres': kilometres,
+            'CylindersinEngine': cylinders_in_engine,
+            'BodyType': body_type,
+            'Doors': doors
         }
         input_df = preprocess_input(input_data, st.session_state.model)
 
