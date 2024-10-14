@@ -91,8 +91,6 @@ def main():
     st.write("Enter the vehicle details below to predict its price.")
 
     # Load data for visualization
-    data_file_id = '1FjZWfVGrIIdtQVXu4g89lcVgQRBg8h1j'  # استبدل بمعرف ملف البيانات
-    url = f'https://drive.google.com/uc?id={data_file_id}'
     df = pd.DataFrame()  # استبدل هذا بجلب البيانات الخاصة بك.
 
     col1, col2 = st.columns(2)
@@ -120,7 +118,7 @@ def main():
     # Make prediction automatically based on inputs
     if st.session_state.model is not None:
         input_data = {
-            'Year': year,  # استخدام القيم المدخلة مباشرة
+            'Year': year,
             'UsedOrNew': used_or_new,
             'Transmission': transmission,
             'Engine': engine,
@@ -132,7 +130,16 @@ def main():
             'BodyType': body_type,
             'Doors': doors
         }
+        
         input_df = preprocess_input(input_data, st.session_state.model)
+
+        # Print input_df for debugging
+        st.write("Input DataFrame for Prediction:")
+        st.dataframe(input_df)  # عرض البيانات المدخلة للتأكد من الأعمدة
+        
+        # Print expected model features for debugging
+        st.write("Expected Model Features:")
+        st.write(st.session_state.model.feature_names_in_)
 
         try:
             prediction = st.session_state.model.predict(input_df)
