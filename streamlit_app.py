@@ -4,8 +4,8 @@ import pickle
 import requests
 from io import BytesIO
 from sklearn.ensemble import RandomForestRegressor
-import matplotlib.pyplot as plt
-import seaborn as sns
+import plotly.express as px
+import plotly.graph_objects as go
 
 # تأكد من أن st.set_page_config هو أول دالة يتم استدعاؤها
 st.set_page_config(page_title="Vehicle Price Prediction", page_icon="🚗", layout="wide")
@@ -110,15 +110,12 @@ def main():
                         'feature': model.feature_names_in_,
                         'importance': model.feature_importances_
                     }).sort_values('importance', ascending=False).head(10)
-                    st.bar_chart(feature_importance.set_index('feature'))
 
-                    # Plotting feature importance using matplotlib
-                    plt.figure(figsize=(10, 6))
-                    sns.barplot(x='importance', y='feature', data=feature_importance, palette='viridis')
-                    plt.xlabel('Importance')
-                    plt.ylabel('Feature')
-                    plt.title('Top 10 Important Features')
-                    st.pyplot(plt)
+                    # Plotting feature importance using plotly
+                    fig = px.bar(feature_importance, x='importance', y='feature', orientation='h',
+                                 title='Top 10 Important Features', labels={'importance': 'Importance', 'feature': 'Feature'})
+                    fig.update_layout(yaxis={'categoryorder': 'total ascending'})
+                    st.plotly_chart(fig)
 
                     # Displaying input data and prediction as a table
                     st.subheader("Input Data and Prediction")
@@ -126,24 +123,17 @@ def main():
                     input_df_display = pd.DataFrame(input_data, index=[0])
                     st.dataframe(input_df_display)
 
-                    # Plotting categorical distributions
+                    # Plotting categorical distributions using plotly
                     st.subheader("Categorical Feature Distributions")
-                    fig, axs = plt.subplots(2, 2, figsize=(15, 10))
+                    fig_used_new = px.pie(input_df_display, names='UsedOrNew', title='Used or New')
+                    fig_transmission = px.pie(input_df_display, names='Transmission', title='Transmission')
+                    fig_drive_type = px.pie(input_df_display, names='DriveType', title='Drive Type')
+                    fig_fuel_type = px.pie(input_df_display, names='FuelType', title='Fuel Type')
 
-                    sns.countplot(x='UsedOrNew', data=input_df_display, ax=axs[0, 0])
-                    axs[0, 0].set_title('Used or New')
-
-                    sns.countplot(x='Transmission', data=input_df_display, ax=axs[0, 1])
-                    axs[0, 1].set_title('Transmission')
-
-                    sns.countplot(x='DriveType', data=input_df_display, ax=axs[1, 0])
-                    axs[1, 0].set_title('Drive Type')
-
-                    sns.countplot(x='FuelType', data=input_df_display, ax=axs[1, 1])
-                    axs[1, 1].set_title('Fuel Type')
-
-                    plt.tight_layout()
-                    st.pyplot(fig)
+                    st.plotly_chart(fig_used_new)
+                    st.plotly_chart(fig_transmission)
+                    st.plotly_chart(fig_drive_type)
+                    st.plotly_chart(fig_fuel_type)
 
                 except Exception as e:
                     st.error(f"Error making prediction: {str(e)}")
