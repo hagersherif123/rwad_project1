@@ -49,20 +49,20 @@ def load_model_from_drive(file_id):
 def preprocess_input(data, model):
     input_df = pd.DataFrame(data, index=[0])
     input_df_encoded = pd.get_dummies(input_df, drop_first=True)
-    model_features = model.feature_names_in_
-    
-    # Debugging: Print the features in the model
-    st.write("Expected model features:")
-    st.write(model_features)
 
+    # Check the columns after encoding
+    st.write("Encoded input columns:", input_df_encoded.columns.tolist())
+
+    model_features = model.feature_names_in_
+
+    # Reindex to match model features
     input_df_encoded = input_df_encoded.reindex(columns=model_features, fill_value=0)
 
-    # Debugging: Print the processed input DataFrame
+    # Display the processed input DataFrame
     st.write("Processed Input DataFrame:")
-    st.dataframe(input_df_encoded)  # عرض البيانات المعالجة للتأكد من الأعمدة
-    
-    return input_df_encoded
+    st.dataframe(input_df_encoded)
 
+    return input_df_encoded
 
 # Create a function to generate plots
 def create_dashboard(df):
@@ -126,11 +126,15 @@ def main():
         file_id = '11btPBNR74na_NjjnjrrYT8RSf8ffiumo'  # Google Drive file ID
         st.session_state.model = load_model_from_drive(file_id)
 
+    # Check expected features from the model
+    if st.session_state.model is not None:
+        st.write("Expected model features:", st.session_state.model.feature_names_in_)
+
     # Make prediction automatically based on inputs
     if st.session_state.model is not None:
         input_data = {
             'Year': year,
-            'UsedOrNew': used_or_new,
+            'UsedOrNew': "Used" if used_or_new == "Used" else "New",
             'Transmission': transmission,
             'Engine': engine,
             'DriveType': drive_type,
@@ -141,16 +145,7 @@ def main():
             'BodyType': body_type,
             'Doors': doors
         }
-        
         input_df = preprocess_input(input_data, st.session_state.model)
-
-        # Print input_df for debugging
-        st.write("Input DataFrame for Prediction:")
-        st.dataframe(input_df)  # عرض البيانات المدخلة للتأكد من الأعمدة
-        
-        # Print expected model features for debugging
-        st.write("Expected Model Features:")
-        st.write(st.session_state.model.feature_names_in_)
 
         try:
             prediction = st.session_state.model.predict(input_df)
