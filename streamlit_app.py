@@ -5,7 +5,6 @@ import requests
 from io import BytesIO
 from sklearn.ensemble import RandomForestRegressor
 import plotly.express as px
-import plotly.graph_objects as go
 
 # تأكد من أن st.set_page_config هو أول دالة يتم استدعاؤها
 st.set_page_config(page_title="Vehicle Price Prediction", page_icon="🚗", layout="wide")
@@ -66,79 +65,81 @@ def main():
     col1, col2 = st.columns(2)
 
     with col1:
-        year = st.number_input("Year 📅", min_value=1900, max_value=2024, value=2020)
-        used_or_new = st.selectbox("Used or New 🏷️", ["Used", "New"])
-        transmission = st.selectbox("Transmission ⚙️", ["Manual", "Automatic"])
-        engine = st.number_input("Engine Size (L) 🔧", min_value=0.0, value=2.0, step=0.1)
-        drive_type = st.selectbox("Drive Type 🛣️", ["FWD", "RWD", "AWD"])
-        fuel_type = st.selectbox("Fuel Type ⛽", ["Petrol", "Diesel", "Electric", "Hybrid"])
+        year = st.number_input("Year 📅", min_value=1900, max_value=2024, value=2020, key="year")
+        used_or_new = st.selectbox("Used or New 🏷️", ["Used", "New"], key="used_or_new")
+        transmission = st.selectbox("Transmission ⚙️", ["Manual", "Automatic"], key="transmission")
+        engine = st.number_input("Engine Size (L) 🔧", min_value=0.0, value=2.0, step=0.1, key="engine")
+        drive_type = st.selectbox("Drive Type 🛣️", ["FWD", "RWD", "AWD"], key="drive_type")
+        fuel_type = st.selectbox("Fuel Type ⛽", ["Petrol", "Diesel", "Electric", "Hybrid"], key="fuel_type")
 
     with col2:
-        fuel_consumption = st.number_input("Fuel Consumption (L/100km) ⛽", min_value=0.0, value=8.0, step=0.1)
-        kilometres = st.number_input("Kilometres 🛣️", min_value=0, value=50000, step=1000)
-        cylinders_in_engine = st.number_input("Cylinders in Engine 🔢", min_value=1, value=4)
-        body_type = st.selectbox("Body Type 🚙", ["Sedan", "SUV", "Hatchback", "Coupe", "Convertible"])
-        doors = st.selectbox("Number of Doors 🚪", [2, 3, 4, 5])
+        fuel_consumption = st.number_input("Fuel Consumption (L/100km) ⛽", min_value=0.0, value=8.0, step=0.1, key="fuel_consumption")
+        kilometres = st.number_input("Kilometres 🛣️", min_value=0, value=50000, step=1000, key="kilometres")
+        cylinders_in_engine = st.number_input("Cylinders in Engine 🔢", min_value=1, value=4, key="cylinders_in_engine")
+        body_type = st.selectbox("Body Type 🚙", ["Sedan", "SUV", "Hatchback", "Coupe", "Convertible"], key="body_type")
+        doors = st.selectbox("Number of Doors 🚪", [2, 3, 4, 5], key="doors")
 
-    if st.button("Predict Price 💰"):
-        with st.spinner("Calculating..."):
-            file_id = '11btPBNR74na_NjjnjrrYT8RSf8ffiumo'  # Google Drive file ID
-            model = load_model_from_drive(file_id)
-            if model is not None:
-                input_data = {
-                    'Year': year,
-                    'UsedOrNew': used_or_new,
-                    'Transmission': transmission,
-                    'Engine': engine,
-                    'DriveType': drive_type,
-                    'FuelType': fuel_type,
-                    'FuelConsumption': fuel_consumption,
-                    'Kilometres': kilometres,
-                    'CylindersinEngine': cylinders_in_engine,
-                    'BodyType': body_type,
-                    'Doors': doors
-                }
-                input_df = preprocess_input(input_data, model)
-                try:
-                    prediction = model.predict(input_df)
-                    st.success("Prediction successful!")
-                    st.markdown(f"<div class='prediction-box'>Predicted Price: ${prediction[0]:,.2f}</div>", unsafe_allow_html=True)
-                    
-                    # Feature importance
-                    st.subheader("Feature Importance")
-                    feature_importance = pd.DataFrame({
-                        'feature': model.feature_names_in_,
-                        'importance': model.feature_importances_
-                    }).sort_values('importance', ascending=False).head(10)
+    # Load model only once and store in session state
+    if 'model' not in st.session_state:
+        file_id = '11btPBNR74na_NjjnjrrYT8RSf8ffiumo'  # Google Drive file ID
+        st.session_state.model = load_model_from_drive(file_id)
 
-                    # Plotting feature importance using plotly
-                    fig = px.bar(feature_importance, x='importance', y='feature', orientation='h',
-                                 title='Top 10 Important Features', labels={'importance': 'Importance', 'feature': 'Feature'})
-                    fig.update_layout(yaxis={'categoryorder': 'total ascending'})
-                    st.plotly_chart(fig)
+    # Make prediction automatically based on inputs
+    if st.session_state.model is not None:
+        input_data = {
+            'Year': st.session_state.year,
+            'UsedOrNew': st.session_state.used_or_new,
+            'Transmission': st.session_state.transmission,
+            'Engine': st.session_state.engine,
+            'DriveType': st.session_state.drive_type,
+            'FuelType': st.session_state.fuel_type,
+            'FuelConsumption': st.session_state.fuel_consumption,
+            'Kilometres': st.session_state.kilometres,
+            'CylindersinEngine': st.session_state.cylinders_in_engine,
+            'BodyType': st.session_state.body_type,
+            'Doors': st.session_state.doors
+        }
+        input_df = preprocess_input(input_data, st.session_state.model)
 
-                    # Displaying input data and prediction as a table
-                    st.subheader("Input Data and Prediction")
-                    input_data['Predicted Price'] = f"${prediction[0]:,.2f}"
-                    input_df_display = pd.DataFrame(input_data, index=[0])
-                    st.dataframe(input_df_display)
+        try:
+            prediction = st.session_state.model.predict(input_df)
+            st.markdown(f"<div class='prediction-box'>Predicted Price: ${prediction[0]:,.2f}</div>", unsafe_allow_html=True)
 
-                    # Plotting categorical distributions using plotly
-                    st.subheader("Categorical Feature Distributions")
-                    fig_used_new = px.pie(input_df_display, names='UsedOrNew', title='Used or New')
-                    fig_transmission = px.pie(input_df_display, names='Transmission', title='Transmission')
-                    fig_drive_type = px.pie(input_df_display, names='DriveType', title='Drive Type')
-                    fig_fuel_type = px.pie(input_df_display, names='FuelType', title='Fuel Type')
+            # Feature importance
+            st.subheader("Feature Importance")
+            feature_importance = pd.DataFrame({
+                'feature': st.session_state.model.feature_names_in_,
+                'importance': st.session_state.model.feature_importances_
+            }).sort_values('importance', ascending=False).head(10)
 
-                    st.plotly_chart(fig_used_new)
-                    st.plotly_chart(fig_transmission)
-                    st.plotly_chart(fig_drive_type)
-                    st.plotly_chart(fig_fuel_type)
+            # Plotting feature importance using plotly
+            fig = px.bar(feature_importance, x='importance', y='feature', orientation='h',
+                         title='Top 10 Important Features', labels={'importance': 'Importance', 'feature': 'Feature'})
+            fig.update_layout(yaxis={'categoryorder': 'total ascending'})
+            st.plotly_chart(fig)
 
-                except Exception as e:
-                    st.error(f"Error making prediction: {str(e)}")
-            else:
-                st.error("Failed to load the model.")
+            # Displaying input data and prediction as a table
+            st.subheader("Input Data and Prediction")
+            input_data['Predicted Price'] = f"${prediction[0]:,.2f}"
+            input_df_display = pd.DataFrame(input_data, index=[0])
+            st.dataframe(input_df_display)
+
+            # Plotting categorical distributions using plotly
+            st.subheader("Categorical Feature Distributions")
+            fig_used_new = px.pie(input_df_display, names='UsedOrNew', title='Used or New')
+            fig_transmission = px.pie(input_df_display, names='Transmission', title='Transmission')
+            fig_drive_type = px.pie(input_df_display, names='DriveType', title='Drive Type')
+            fig_fuel_type = px.pie(input_df_display, names='FuelType', title='Fuel Type')
+
+            st.plotly_chart(fig_used_new)
+            st.plotly_chart(fig_transmission)
+            st.plotly_chart(fig_drive_type)
+            st.plotly_chart(fig_fuel_type)
+
+        except Exception as e:
+            st.error(f"Error making prediction: {str(e)}")
+    else:
+        st.error("Failed to load the model.")
 
 if __name__ == "__main__":
     main()
