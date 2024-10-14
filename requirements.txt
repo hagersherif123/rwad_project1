@@ -1,5 +1,4 @@
 streamlit
-pip install --upgrade pip
-pip install streamlit requests
-pip install streamlit gdown
+streamlit requests
+streamlit gdown
 
