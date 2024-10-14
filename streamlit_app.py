@@ -45,27 +45,6 @@ def preprocess_input(data, model):
 
 # Main Streamlit app
 def main():
-    st.title("My Streamlit App")
-
-    model_url = "https://drive.google.com/uc?id=1tm26hgFqH6jgquktn3ZosbTuRV_Yoepq"  # Make sure this is your correct file ID
-
-    
-    try:
-        model_file = download_model(model_url)
-        model = pickle.load(model_file)
-        st.success("Model loaded successfully!")
-        
-        # Your model usage code here
-        # For example:
-        # if isinstance(model, sklearn.base.BaseEstimator):
-        #     st.write("Loaded a scikit-learn model")
-        
-    except ModuleNotFoundError as e:
-        st.error(f"Error: {str(e)}")
-        st.write("It looks like you're missing some required libraries. Please install them using:")
-        st.code("pip install scikit-learn")
-    except Exception as e:
-        st.error(f"Error loading the model: {str(e)}")
     st.set_page_config(page_title="Vehicle Price Prediction", page_icon="🚗", layout="wide")
     
     st.title("🚗 Vehicle Price Prediction App")
@@ -90,9 +69,12 @@ def main():
 
     if st.button("Predict Price 💰"):
         with st.spinner("Calculating..."):
-            file_id = '11btPBNR74na_NjjnjrrYT8RSf8ffiumo'  # Google Drive file ID
-            model = load_model_from_drive(file_id)
-            if model is not None:
+            model_url = "https://drive.google.com/uc?id=11btPBNR74na_NjjnjrrYT8RSf8ffiumo"  # Google Drive file URL
+            try:
+                model_file = download_model(model_url)
+                model = pickle.load(model_file)
+                st.success("Model loaded successfully!")
+                
                 input_data = {
                     'Year': year,
                     'UsedOrNew': used_or_new,
@@ -122,8 +104,13 @@ def main():
                     
                 except Exception as e:
                     st.error(f"Error making prediction: {str(e)}")
-            else:
-                st.error("Failed to load the model.")
+                    
+            except ModuleNotFoundError as e:
+                st.error(f"Error: {str(e)}")
+                st.write("It looks like you're missing some required libraries. Please install them using:")
+                st.code("pip install scikit-learn")
+            except Exception as e:
+                st.error(f"Error loading the model: {str(e)}")
 
 if __name__ == "__main__":
     main()
