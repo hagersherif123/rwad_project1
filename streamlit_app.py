@@ -5,6 +5,8 @@ import requests
 from io import BytesIO
 from sklearn.ensemble import RandomForestRegressor
 import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 # تأكد من أن st.set_page_config هو أول دالة يتم استدعاؤها
 st.set_page_config(page_title="Vehicle Price Prediction", page_icon="🚗", layout="wide")
@@ -16,12 +18,6 @@ st.markdown("""
         padding: 2rem;
         border-radius: 0.5rem;
         background-color: #f0f2f6;
-    }
-    .stButton>button {
-        width: 100%;
-        background-color: #4CAF50;
-        color: white;
-        font-weight: bold;
     }
     .prediction-box {
         background-color: #e1e4e8;
@@ -57,10 +53,47 @@ def preprocess_input(data, model):
     input_df_encoded = input_df_encoded.reindex(columns=model_features, fill_value=0)
     return input_df_encoded
 
+# Create a function to generate plots
+def create_dashboard(df):
+    # Scatter plot for Fuel Consumption vs. Price
+    scatter = px.scatter(df, x='FuelConsumption', y='Price', color='FuelType',
+                         title='Fuel Consumption vs Price', 
+                         labels={'FuelConsumption': 'Fuel Consumption (L/100km)', 'Price': 'Price ($)'})
+
+    # Histogram for Price Distribution
+    histogram = px.histogram(df, x='Price', nbins=30, 
+                             title='Distribution of Vehicle Prices', 
+                             labels={'Price': 'Price ($)'})
+
+    # Box Plot for Price by Transmission Type
+    box = px.box(df, x='Transmission', y='Price', 
+                 title='Price Distribution by Transmission Type', 
+                 labels={'Transmission': 'Transmission Type', 'Price': 'Price ($)'})
+
+    # Dashboard Layout using Plotly
+    fig = make_subplots(rows=2, cols=2, subplot_titles=('Fuel Consumption vs Price', 'Price Distribution', 'Price by Transmission'),
+                        specs=[[{"type": "scatter"}, {"type": "histogram"}], [{"type": "box"}, None]])
+
+    # Adding traces to the subplots
+    fig.add_trace(go.Scatter(x=df['FuelConsumption'], y=df['Price'], mode='markers',
+                             marker=dict(color=df['FuelType'].apply(lambda x: 'blue' if x == 'Petrol' else 'red')), name='Fuel vs Price'), row=1, col=1)
+    fig.add_trace(go.Histogram(x=df['Price'], nbinsx=30, name='Price Distribution'), row=1, col=2)
+    fig.add_trace(go.Box(y=df['Price'], x=df['Transmission'], name='Price by Transmission'), row=2, col=1)
+
+    # Update layout for interactivity and aesthetics
+    fig.update_layout(height=800, width=1200, title_text="Vehicle Prices Dashboard", showlegend=False)
+
+    return fig
+
 # Main Streamlit app
 def main():
     st.title("🚗 Vehicle Price Prediction App")
     st.write("Enter the vehicle details below to predict its price.")
+
+    # Load data for visualization
+    url = "https://drive.google.com/file/d/1FjZWfVGrIIdtQVXu4g89lcVgQRBg8h1j/view?usp=sharing.csv"
+    df = pd.read_csv(url)  # تأكد من تحميل بياناتك
+    df = pd.DataFrame()  # استبدل هذا بجلب البيانات الخاصة بك.
 
     col1, col2 = st.columns(2)
 
@@ -124,17 +157,10 @@ def main():
             input_df_display = pd.DataFrame(input_data, index=[0])
             st.dataframe(input_df_display)
 
-            # Plotting categorical distributions using plotly
-            st.subheader("Categorical Feature Distributions")
-            fig_used_new = px.pie(input_df_display, names='UsedOrNew', title='Used or New')
-            fig_transmission = px.pie(input_df_display, names='Transmission', title='Transmission')
-            fig_drive_type = px.pie(input_df_display, names='DriveType', title='Drive Type')
-            fig_fuel_type = px.pie(input_df_display, names='FuelType', title='Fuel Type')
-
-            st.plotly_chart(fig_used_new)
-            st.plotly_chart(fig_transmission)
-            st.plotly_chart(fig_drive_type)
-            st.plotly_chart(fig_fuel_type)
+            # Create and display the dashboard
+            st.subheader("Vehicle Prices Dashboard")
+            dashboard_fig = create_dashboard(df)
+            st.plotly_chart(dashboard_fig)
 
         except Exception as e:
             st.error(f"Error making prediction: {str(e)}")
