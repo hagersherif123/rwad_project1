@@ -31,19 +31,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Function to download and load the model
-def load_model_from_drive(file_id):
-    url = f'https://drive.google.com/uc?id={file_id}'
-    try:
-        response = requests.get(url)
-        model = pickle.load(BytesIO(response.content))
-        if isinstance(model, RandomForestRegressor):
-            return model
-        else:
-            st.error("Loaded model is not a RandomForestRegressor.")
-            return None
-    except Exception as e:
-        st.error(f"Error loading the model: {str(e)}")
-        return None
+def download_model(url):
+    response = requests.get(url)
+    return BytesIO(response.content)
 
 # Preprocess the input data
 def preprocess_input(data, model):
@@ -55,6 +45,27 @@ def preprocess_input(data, model):
 
 # Main Streamlit app
 def main():
+    st.title("My Streamlit App")
+
+    model_url = "https://drive.google.com/uc?id=1tm26hgFqH6jgquktn3ZosbTuRV_Yoepq"  # Make sure this is your correct file ID
+
+    
+    try:
+        model_file = download_model(model_url)
+        model = pickle.load(model_file)
+        st.success("Model loaded successfully!")
+        
+        # Your model usage code here
+        # For example:
+        # if isinstance(model, sklearn.base.BaseEstimator):
+        #     st.write("Loaded a scikit-learn model")
+        
+    except ModuleNotFoundError as e:
+        st.error(f"Error: {str(e)}")
+        st.write("It looks like you're missing some required libraries. Please install them using:")
+        st.code("pip install scikit-learn")
+    except Exception as e:
+        st.error(f"Error loading the model: {str(e)}")
     st.set_page_config(page_title="Vehicle Price Prediction", page_icon="🚗", layout="wide")
     
     st.title("🚗 Vehicle Price Prediction App")
