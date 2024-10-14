@@ -45,11 +45,21 @@ def load_model_from_drive(file_id):
         st.error(f"Error loading the model: {str(e)}")
         return None
 
+# Function to load data from Google Drive
+def load_data_from_drive(file_id):
+    url = f'https://drive.google.com/uc?id={file_id}'
+    try:
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.error(f"Error loading data: {str(e)}")
+        return None
+
 # Preprocess the input data
 def preprocess_input(data, model):
     input_df = pd.DataFrame(data, index=[0])
     input_df_encoded = pd.get_dummies(input_df, drop_first=True)
-
+    
     # Check the columns after encoding
     st.write("Encoded input columns:", input_df_encoded.columns.tolist())
 
@@ -101,8 +111,9 @@ def main():
     st.title("🚗 Vehicle Price Prediction App")
     st.write("Enter the vehicle details below to predict its price.")
 
-    # Load data for visualization
-    df = pd.DataFrame()  # استبدل هذا بجلب البيانات الخاصة بك.
+    # Load data for visualization from Google Drive
+    file_id = '1FjZWfVGrIIdtQVXu4g89lcVgQRBg8h1j'  # Google Drive file ID
+    df = load_data_from_drive(file_id)
 
     col1, col2 = st.columns(2)
 
@@ -123,18 +134,14 @@ def main():
 
     # Load model only once and store in session state
     if 'model' not in st.session_state:
-        file_id = '11btPBNR74na_NjjnjrrYT8RSf8ffiumo'  # Google Drive file ID
-        st.session_state.model = load_model_from_drive(file_id)
-
-    # Check expected features from the model
-    if st.session_state.model is not None:
-        st.write("Expected model features:", st.session_state.model.feature_names_in_)
+        model_file_id = '11btPBNR74na_NjjnjrrYT8RSf8ffiumo'  # Google Drive file ID for model
+        st.session_state.model = load_model_from_drive(model_file_id)
 
     # Make prediction automatically based on inputs
     if st.session_state.model is not None:
         input_data = {
             'Year': year,
-            'UsedOrNew': "Used" if used_or_new == "Used" else "New",
+            'UsedOrNew': used_or_new,
             'Transmission': transmission,
             'Engine': engine,
             'DriveType': drive_type,
