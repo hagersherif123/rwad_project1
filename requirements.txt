@@ -1,3 +1,4 @@
 streamlit
+pip install streamlit requests
 pip install streamlit gdown
 
