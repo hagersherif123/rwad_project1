@@ -91,7 +91,7 @@ def main():
     st.write("Enter the vehicle details below to predict its price.")
 
     # تحميل البيانات من Google Drive
-    data_file_id = 'YOUR_DATA_FILE_ID'  # استبدل بمعرف ملف البيانات
+    data_file_id = '1FjZWfVGrIIdtQVXu4g89lcVgQRBg8h1j'  # استبدل بمعرف ملف البيانات
     url = f'https://drive.google.com/uc?id={data_file_id}'
     df = pd.read_csv(url)  # تحميل البيانات من Google Drive
 
