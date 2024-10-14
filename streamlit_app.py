@@ -5,6 +5,7 @@ import requests
 from io import BytesIO
 from sklearn.ensemble import RandomForestRegressor
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 # تأكد من أن st.set_page_config هو أول دالة يتم استدعاؤها
 st.set_page_config(page_title="Vehicle Price Prediction", page_icon="🚗", layout="wide")
@@ -113,7 +114,7 @@ def main():
 
                     # Plotting feature importance using matplotlib
                     plt.figure(figsize=(10, 6))
-                    plt.barh(feature_importance['feature'], feature_importance['importance'], color='skyblue')
+                    sns.barplot(x='importance', y='feature', data=feature_importance, palette='viridis')
                     plt.xlabel('Importance')
                     plt.ylabel('Feature')
                     plt.title('Top 10 Important Features')
@@ -124,6 +125,25 @@ def main():
                     input_data['Predicted Price'] = f"${prediction[0]:,.2f}"
                     input_df_display = pd.DataFrame(input_data, index=[0])
                     st.dataframe(input_df_display)
+
+                    # Plotting categorical distributions
+                    st.subheader("Categorical Feature Distributions")
+                    fig, axs = plt.subplots(2, 2, figsize=(15, 10))
+
+                    sns.countplot(x='UsedOrNew', data=input_df_display, ax=axs[0, 0])
+                    axs[0, 0].set_title('Used or New')
+
+                    sns.countplot(x='Transmission', data=input_df_display, ax=axs[0, 1])
+                    axs[0, 1].set_title('Transmission')
+
+                    sns.countplot(x='DriveType', data=input_df_display, ax=axs[1, 0])
+                    axs[1, 0].set_title('Drive Type')
+
+                    sns.countplot(x='FuelType', data=input_df_display, ax=axs[1, 1])
+                    axs[1, 1].set_title('Fuel Type')
+
+                    plt.tight_layout()
+                    st.pyplot(fig)
 
                 except Exception as e:
                     st.error(f"Error making prediction: {str(e)}")
