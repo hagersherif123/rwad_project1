@@ -90,14 +90,10 @@ def main():
     st.title("🚗 Vehicle Price Prediction App")
     st.write("Enter the vehicle details below to predict its price.")
 
-    # تحميل البيانات من Google Drive
+    # Load data for visualization
     data_file_id = '1FjZWfVGrIIdtQVXu4g89lcVgQRBg8h1j'  # استبدل بمعرف ملف البيانات
     url = f'https://drive.google.com/uc?id={data_file_id}'
-    df = pd.read_csv(url)  # تحميل البيانات من Google Drive
-
-    if df.empty:
-        st.error("Failed to load data.")
-        return
+    df = pd.DataFrame()  # استبدل هذا بجلب البيانات الخاصة بك.
 
     col1, col2 = st.columns(2)
 
@@ -118,13 +114,13 @@ def main():
 
     # Load model only once and store in session state
     if 'model' not in st.session_state:
-        model_file_id = '11btPBNR74na_NjjnjrrYT8RSf8ffiumo'  # Google Drive file ID
-        st.session_state.model = load_model_from_drive(model_file_id)
+        file_id = '11btPBNR74na_NjjnjrrYT8RSf8ffiumo'  # Google Drive file ID
+        st.session_state.model = load_model_from_drive(file_id)
 
     # Make prediction automatically based on inputs
     if st.session_state.model is not None:
         input_data = {
-            'Year': year,
+            'Year': year,  # استخدام القيم المدخلة مباشرة
             'UsedOrNew': used_or_new,
             'Transmission': transmission,
             'Engine': engine,
