@@ -21,7 +21,8 @@ def download_model(url):
 def main():
     st.title("My Streamlit App")
 
-    model_url = "https://drive.google.com/file/d/1tm26hgFqH6jgquktn3ZosbTuRV_Yoepq/view?usp=sharing"  # Replace with your actual file ID
+    model_url = "https://drive.google.com/uc?id=1tm26hgFqH6jgquktn3ZosbTuRV_Yoepq"  # Replace with your actual file ID
+  
     
     try:
         model = download_model(model_url)
