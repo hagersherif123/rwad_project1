@@ -1,2 +1,3 @@
 streamlit
-streamlit gdown
+pip install streamlit gdown
+
